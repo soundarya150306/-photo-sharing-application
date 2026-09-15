@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEAM_MEMBER
+}
+
+model User {
+  id               String        @id @default(uuid())
+  email            String        @unique
+  passwordHash     String
+  name             String
+  role             Role          @default(TEAM_MEMBER)
+  avatarUrl        String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  createdEvents    Event[]       @relation("AdminEvents")
+  eventMemberships EventMember[]
+  uploadedPhotos   Photo[]
+}
+
+model Event {
+  id               String        @id @default(uuid())
+  title            String
+  slug             String        @unique
+  description      String?
+  clientName       String
+  eventDate        DateTime
+  location         String?
+  coverPhotoUrl    String?
+  createdByAdminId String
+  createdBy        User          @relation("AdminEvents", fields: [createdByAdminId], references: [id])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  members          EventMember[]
+  photos           Photo[]
+  gallery          Gallery?
+}
+
+model EventMember {
+  id         String   @id @default(uuid())
+  eventId    String
+  userId     String
+  role       String   @default("Photographer")
+  assignedAt DateTime @default(now())
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Photo {
+  id                String   @id @default(uuid())
+  eventId           String
+  uploadedByUserId  String
+  filename          String
+  originalFilename  String
+  storageLocation   String
+  thumbnailLocation String?
+  fileSize          Int
+  mimeType          String
+  width             Int?
+  height            Int?
+  isSelected        Boolean  @default(false)
+  tags              String?
+  createdAt         DateTime @default(now())
+  event             Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  uploadedBy        User     @relation(fields: [uploadedByUserId], references: [id], onDelete: Cascade)
+}
+
+model Gallery {
+  id               String    @id @default(uuid())
+  eventId          String    @unique
+  slug             String    @unique
+  pinHash          String
+  isPublished      Boolean   @default(false)
+  publishedAt      DateTime?
+  expiresAt        DateTime?
+  allowDownload    Boolean   @default(true)
+  customTitle      String?
+  customWelcomeMsg String?
+  viewCount        Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  event            Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
