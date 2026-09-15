@@ -61,6 +61,8 @@ export interface EventItem {
     photos: number;
     members: number;
   };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Photo {
