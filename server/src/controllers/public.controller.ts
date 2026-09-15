@@ -219,7 +219,7 @@ export async function getPublicGalleryPhotos(req: Request, res: Response, next: 
       orderBy: { createdAt: 'asc' },
     });
 
-    const formattedPhotos = photos.map((photo) => ({
+    const formattedPhotos = photos.map((photo: any) => ({
       id: photo.id,
       filename: photo.filename,
       originalFilename: photo.originalFilename,

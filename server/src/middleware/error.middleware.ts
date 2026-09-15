@@ -12,7 +12,7 @@ export function errorHandler(
 
   // Zod Validation Error
   if (err instanceof ZodError) {
-    const formattedErrors = err.errors.map((e) => ({
+    const formattedErrors = err.errors.map((e: any) => ({
       field: e.path.join('.'),
       message: e.message,
     }));

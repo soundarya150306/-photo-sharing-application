@@ -89,7 +89,7 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
     // If members provided, attach them
     if (data.memberIds && data.memberIds.length > 0) {
       await Promise.all(
-        data.memberIds.map((userId) =>
+        data.memberIds.map((userId: string) =>
           prisma.eventMember.create({
             data: {
               eventId: event.id,
@@ -103,45 +103,35 @@ export async function createEvent(req: Request, res: Response, next: NextFunctio
 
     res.status(201).json({
       success: true,
-      message: 'Event created successfully.',
-      data: {
-        event,
-        initialPin, // Returned once so admin sees default PIN
-      },
+      message: 'Event created successfully',
+      data: { event },
     });
   } catch (error) {
     next(error);
   }
 }
 
+/**
+ * Get list of events accessible by user
+ */
 export async function getEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const user = req.user!;
     const isAdmin = user.role === 'ADMIN';
 
-    const whereClause = isAdmin
-      ? {}
-      : {
-          members: {
-            some: {
-              userId: user.id,
-            },
-          },
-        };
+    let whereClause: any = {};
+    if (!isAdmin) {
+      // Photographers/Team see events they are members of
+      whereClause = {
+        members: {
+          some: { userId: user.id },
+        },
+      };
+    }
 
     const events = await prisma.event.findMany({
       where: whereClause,
       include: {
-        createdBy: {
-          select: { id: true, name: true, email: true },
-        },
-        members: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true, avatarUrl: true, role: true },
-            },
-          },
-        },
         gallery: {
           select: {
             id: true,
@@ -150,6 +140,16 @@ export async function getEvents(req: Request, res: Response, next: NextFunction)
             publishedAt: true,
             allowDownload: true,
             viewCount: true,
+          },
+        },
+        createdBy: {
+          select: { id: true, name: true, email: true },
+        },
+        members: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, avatarUrl: true, role: true },
+            },
           },
         },
         _count: {
@@ -164,7 +164,7 @@ export async function getEvents(req: Request, res: Response, next: NextFunction)
 
     // Enrich with selected photos count
     const enrichedEvents = await Promise.all(
-      events.map(async (event) => {
+      events.map(async (event: any) => {
         const selectedCount = await prisma.photo.count({
           where: {
             eventId: event.id,

@@ -4,8 +4,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc && prisma generate",
-    "vercel-build": "npm run build",
+    "build": "prisma generate && tsc",
+    "vercel-build": "prisma generate && tsc",
     "start": "node dist/index.js",
     "setup": "prisma generate && prisma db push && npm run seed",
     "seed": "tsx prisma/seed.ts",
