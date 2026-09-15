@@ -20,10 +20,13 @@ export const LandingPage: React.FC = () => {
   const { quickDemoLogin } = useAuth();
   const navigate = useNavigate();
 
-  const handleDemo = async (role: 'ADMIN' | 'TEAM_1' | 'TEAM_2') => {
-    await quickDemoLogin(role);
-    if (role === 'ADMIN') navigate('/admin');
-    else navigate('/team');
+  const handleDemo = async (role: 'ADMIN' | 'TEAM_1' | 'TEAM_2' | 'TEAM_3') => {
+    const user = await quickDemoLogin(role);
+    if (user?.role === 'ADMIN') {
+      navigate('/admin');
+    } else {
+      navigate('/team');
+    }
   };
 
   return (

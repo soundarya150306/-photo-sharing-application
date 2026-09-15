@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Download, Play, Pause, Maximize, Minimize } from 'lucide-react';
 import { PublicPhoto } from '../types';
+import { getAssetUrl, API_BASE } from '../services/api';
 
 interface CustomerLightboxProps {
   photos: PublicPhoto[];
@@ -56,7 +57,7 @@ export const CustomerLightbox: React.FC<CustomerLightboxProps> = ({
   if (!isOpen || photos.length === 0) return null;
 
   const currentPhoto = photos[currentIndex];
-  const downloadUrl = `/api/public/gallery/${gallerySlug}/photos/${currentPhoto.id}/download?token=${guestToken}`;
+  const downloadUrl = `${API_BASE}/public/gallery/${gallerySlug}/photos/${currentPhoto.id}/download?token=${guestToken}`;
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -141,7 +142,7 @@ export const CustomerLightbox: React.FC<CustomerLightboxProps> = ({
         <div className="max-w-full max-h-full flex items-center justify-center">
           <img
             key={currentPhoto.id}
-            src={currentPhoto.url}
+            src={getAssetUrl(currentPhoto.url)}
             alt={currentPhoto.originalFilename}
             className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl transition-all duration-300 animate-scale-up"
           />
@@ -169,7 +170,7 @@ export const CustomerLightbox: React.FC<CustomerLightboxProps> = ({
                 : 'opacity-40 hover:opacity-80 border border-white/10'
             }`}
           >
-            <img src={p.url} alt="" className="w-full h-full object-cover" />
+            <img src={getAssetUrl(p.url)} alt="" className="w-full h-full object-cover" />
           </button>
         ))}
       </div>

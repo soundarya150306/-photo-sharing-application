@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
-import { api } from '../services/api';
+import { api, getAssetUrl, API_BASE } from '../services/api';
 import { PublicGalleryInfo, PublicPhoto } from '../types';
 import { CustomerLightbox } from '../components/CustomerLightbox';
 import {
@@ -125,7 +125,7 @@ export const CustomerGalleryPage: React.FC = () => {
     setIsDownloadingZip(true);
     try {
       // Direct browser download
-      window.location.href = `/api/public/gallery/${slug}/download-all?token=${guestToken}`;
+      window.location.href = `${API_BASE}/public/gallery/${slug}/download-all?token=${guestToken}`;
     } catch (err) {
       console.error('Download error:', err);
     } finally {
@@ -247,13 +247,16 @@ export const CustomerGalleryPage: React.FC = () => {
           <div className="p-3 rounded-xl bg-brand-500/10 border border-brand-500/25 text-left flex items-center justify-between">
             <div className="text-[11px] text-brand-200">
               <span>Demo Access PIN: </span>
-              <strong className="font-mono text-white text-xs">482917</strong>
+              <strong className="font-mono text-white text-xs">
+                {slug === 'tech-innovators-summit-2026' ? '654321' : '482917'}
+              </strong>
             </div>
             <button
               type="button"
               onClick={() => {
-                setPin('482917');
-                handleUnlock('482917');
+                const demoPin = slug === 'tech-innovators-summit-2026' ? '654321' : '482917';
+                setPin(demoPin);
+                handleUnlock(demoPin);
               }}
               className="px-2.5 py-1 rounded-lg bg-brand-500/20 hover:bg-brand-500/30 text-brand-300 text-[10px] font-bold uppercase transition-all"
             >
@@ -456,7 +459,7 @@ export const CustomerGalleryPage: React.FC = () => {
                 className="group relative rounded-2xl overflow-hidden glass-card cursor-pointer border border-white/5 hover:border-brand-400/40 transition-all duration-300 aspect-[4/3] bg-dark-900 shadow-lg hover:shadow-2xl"
               >
                 <img
-                  src={photo.url}
+                  src={getAssetUrl(photo.url)}
                   alt={photo.originalFilename}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

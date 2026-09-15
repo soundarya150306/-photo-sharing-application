@@ -8,7 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
-  quickDemoLogin: (type: 'ADMIN' | 'TEAM_1' | 'TEAM_2') => Promise<void>;
+  quickDemoLogin: (type?: 'ADMIN' | 'TEAM_1' | 'TEAM_2' | 'TEAM_3') => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,29 +53,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
-  const quickDemoLogin = async (type: 'ADMIN' | 'TEAM_1' | 'TEAM_2') => {
+  const quickDemoLogin = async (type: 'ADMIN' | 'TEAM_1' | 'TEAM_2' | 'TEAM_3' = 'ADMIN'): Promise<User | null> => {
     setIsLoading(true);
-    let email = 'admin@lumina.photos';
-    let password = 'Admin@123456';
-
-    if (type === 'TEAM_1') {
-      email = 'photographer1@lumina.photos';
-      password = 'Team@123456';
-    } else if (type === 'TEAM_2') {
-      email = 'photographer2@lumina.photos';
-      password = 'Team@123456';
+    try {
+      // 1. Try dedicated fast 1-click demo endpoint (auto-seeds if needed)
+      const res = await api.demoLogin(type);
+      if (res.data?.success && res.data?.data) {
+        const { token: newToken, user: newUser } = res.data.data;
+        login(newToken, newUser);
+        return newUser;
+      }
+    } catch (err) {
+      console.warn('Dedicated demo login attempt, falling back to standard login:', err);
     }
 
+    // 2. Fallback to standard login
     try {
-      const res = await api.login({ email, password });
-      if (res.data.success) {
-        login(res.data.data.token, res.data.data.user);
+      let email = 'admin@lumina.photos';
+      let password = 'Admin@123456';
+
+      if (type === 'TEAM_1') {
+        email = 'photographer1@lumina.photos';
+        password = 'Team@123456';
+      } else if (type === 'TEAM_2') {
+        email = 'photographer2@lumina.photos';
+        password = 'Team@123456';
+      } else if (type === 'TEAM_3') {
+        email = 'photographer3@lumina.photos';
+        password = 'Team@123456';
       }
-    } catch (error) {
-      console.error('Quick demo login error:', error);
+
+      const res = await api.login({ email, password });
+      if (res.data?.success && res.data?.data) {
+        const { token: newToken, user: newUser } = res.data.data;
+        login(newToken, newUser);
+        return newUser;
+      }
+    } catch (fallbackError) {
+      console.error('Quick demo login error:', fallbackError);
     } finally {
       setIsLoading(false);
     }
+    return null;
   };
 
   return (

@@ -1,6 +1,16 @@
 import axios from 'axios';
 
-export const API_BASE = '/api';
+export const BACKEND_URL = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
+export const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
+export const getAssetUrl = (urlOrPath?: string): string => {
+  if (!urlOrPath) return '';
+  if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://') || urlOrPath.startsWith('data:')) {
+    return urlOrPath;
+  }
+  const cleanPath = urlOrPath.startsWith('/') ? urlOrPath : `/${urlOrPath}`;
+  return BACKEND_URL ? `${BACKEND_URL}${cleanPath}` : cleanPath;
+};
 
 export const apiClient = axios.create({
   baseURL: API_BASE,
@@ -39,6 +49,8 @@ export const api = {
   // Auth
   login: (credentials: { email: string; password: string }) =>
     apiClient.post('/auth/login', credentials),
+  demoLogin: (role: 'ADMIN' | 'TEAM_1' | 'TEAM_2' | 'TEAM_3' | string) =>
+    apiClient.post('/auth/demo-login', { role }),
   register: (data: { email: string; password: string; name: string; role?: string }) =>
     apiClient.post('/auth/register', data),
   getMe: () => apiClient.get('/auth/me'),
@@ -60,7 +72,7 @@ export const api = {
     apiClient.get(`/events/${eventId}/photos`, { params }),
   uploadPhotos: (eventId: string, formData: FormData, onUploadProgress?: (progressEvent: any) => void) =>
     apiClient.post(`/events/${eventId}/photos`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined },
       onUploadProgress,
     }),
   updateSelection: (eventId: string, photoIds: string[], isSelected: boolean) =>
@@ -76,11 +88,11 @@ export const api = {
 
   // Public Customer Gallery
   getPublicInfo: (slug: string) =>
-    axios.get(`/api/public/gallery/${slug}/info`),
+    apiClient.get(`/public/gallery/${slug}/info`),
   unlockGallery: (slug: string, pin: string) =>
-    axios.post(`/api/public/gallery/${slug}/unlock`, { pin }),
+    apiClient.post(`/public/gallery/${slug}/unlock`, { pin }),
   getPublicPhotos: (slug: string, guestToken: string) =>
-    axios.get(`/api/public/gallery/${slug}/photos`, {
+    apiClient.get(`/public/gallery/${slug}/photos`, {
       headers: { Authorization: `Bearer ${guestToken}` },
     }),
 };

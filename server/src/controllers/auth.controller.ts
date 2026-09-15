@@ -175,3 +175,66 @@ export async function getTeamMembers(req: Request, res: Response, next: NextFunc
     next(error);
   }
 }
+
+export async function demoLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const roleType = String(req.body.role || 'ADMIN').toUpperCase();
+    let email = 'admin@lumina.photos';
+    let name = 'Elena Vance (Lead Admin)';
+    let defaultRole: 'ADMIN' | 'TEAM_MEMBER' = 'ADMIN';
+
+    if (roleType === 'TEAM_1') {
+      email = 'photographer1@lumina.photos';
+      name = 'Marcus Ray (Lead Photographer)';
+      defaultRole = 'TEAM_MEMBER';
+    } else if (roleType === 'TEAM_2') {
+      email = 'photographer2@lumina.photos';
+      name = 'Sophia Chen (Ceremony Specialist)';
+      defaultRole = 'TEAM_MEMBER';
+    } else if (roleType === 'TEAM_3') {
+      email = 'photographer3@lumina.photos';
+      name = 'David Kim (Drone & Candid)';
+      defaultRole = 'TEAM_MEMBER';
+    }
+
+    let user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
+      const passwordHash = await hashPassword(defaultRole === 'ADMIN' ? 'Admin@123456' : 'Team@123456');
+      user = await prisma.user.create({
+        data: {
+          email: email.toLowerCase(),
+          passwordHash,
+          name,
+          role: defaultRole,
+        },
+      });
+    }
+
+    const token = signUserToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role as 'ADMIN' | 'TEAM_MEMBER',
+      name: user.name,
+    });
+
+    res.json({
+      success: true,
+      message: 'Demo login successful.',
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+        token,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+

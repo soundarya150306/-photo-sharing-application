@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, Trash2, Eye, User, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { Photo, Role } from '../types';
+import { getAssetUrl } from '../services/api';
 
 interface PhotoGridProps {
   photos: Photo[];
@@ -10,6 +11,7 @@ interface PhotoGridProps {
   onToggleSelect: (photoId: string) => void;
   onPreviewPhoto: (photo: Photo) => void;
   onDeletePhoto: (photoId: string) => void;
+  onSwitchToUpload?: () => void;
 }
 
 export const PhotoGrid: React.FC<PhotoGridProps> = ({
@@ -20,6 +22,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   onToggleSelect,
   onPreviewPhoto,
   onDeletePhoto,
+  onSwitchToUpload,
 }) => {
   if (photos.length === 0) {
     return (
@@ -29,8 +32,16 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         </div>
         <h4 className="text-sm font-semibold text-slate-300">No photos match the current filter</h4>
         <p className="text-xs text-slate-500 max-w-sm">
-          Upload event photos using the uploader above or switch filters to view other collections.
+          Upload event photos using the uploader or switch filters to view other collections.
         </p>
+        {onSwitchToUpload && (
+          <button
+            onClick={onSwitchToUpload}
+            className="mt-2 px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-semibold"
+          >
+            Upload Captures Now
+          </button>
+        )}
       </div>
     );
   }
@@ -40,7 +51,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       {photos.map((photo) => {
         const isSelected = photo.isSelected || selectedPhotoIds.includes(photo.id);
         const canDelete = isAdmin || photo.uploadedByUserId === currentUserId;
-        const photoUrl = photo.url || `/uploads/${photo.storageLocation}`;
+        const photoUrl = getAssetUrl(photo.url || `/uploads/${photo.storageLocation}`);
 
         return (
           <div

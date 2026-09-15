@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Image as ImageIcon, CheckCircle, Lock, Globe, Users, ArrowRight, Shield } from 'lucide-react';
 import { EventItem } from '../types';
+import { getAssetUrl } from '../services/api';
 
 interface EventCardProps {
   event: EventItem;
@@ -34,7 +35,7 @@ export const EventCard: React.FC<EventCardProps> = ({
       <div className="relative h-48 w-full overflow-hidden bg-dark-900">
         {event.coverPhotoUrl ? (
           <img
-            src={event.coverPhotoUrl}
+            src={getAssetUrl(event.coverPhotoUrl)}
             alt={event.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />

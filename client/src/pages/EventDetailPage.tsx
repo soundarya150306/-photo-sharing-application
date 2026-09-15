@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
+import { api, getAssetUrl } from '../services/api';
 import { EventItem, Photo, User } from '../types';
 import { PhotoUploader } from '../components/PhotoUploader';
 import { PhotoGrid } from '../components/PhotoGrid';
@@ -246,6 +246,19 @@ export const EventDetailPage: React.FC = () => {
 
           {/* Quick Header Actions */}
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Upload Button visible to both Admin and Team */}
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-md ${
+                activeTab === 'upload'
+                  ? 'bg-cyan-500 text-dark-950 font-bold shadow-cyan-500/30'
+                  : 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40'
+              }`}
+            >
+              <UploadCloud className="w-4 h-4" />
+              <span>Upload Captures</span>
+            </button>
+
             {isAdmin && (
               <>
                 <button
@@ -437,6 +450,7 @@ export const EventDetailPage: React.FC = () => {
               setPreviewPhoto(photo);
             }}
             onDeletePhoto={handleDeletePhoto}
+            onSwitchToUpload={() => setActiveTab('upload')}
           />
 
           {/* Admin Floating Curation Bar */}
@@ -475,7 +489,7 @@ export const EventDetailPage: React.FC = () => {
             id: p.id,
             filename: p.filename,
             originalFilename: p.originalFilename,
-            url: p.url || `/uploads/${p.storageLocation}`,
+            url: getAssetUrl(p.url || `/uploads/${p.storageLocation}`),
             fileSize: p.fileSize,
             mimeType: p.mimeType,
             createdAt: p.createdAt,

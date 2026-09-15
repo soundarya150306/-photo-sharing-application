@@ -5,8 +5,21 @@ import fs from 'fs';
 
 const prisma = new PrismaClient();
 
-// Source brain artifact directory where photorealistic images were generated
-const brainDir = path.resolve('C:/Users/iswar/.gemini/antigravity-ide/brain/7580dbfc-e90a-4d5f-b73b-a16241bd2a27');
+// Source brain artifact directories where photorealistic images were generated
+const brainDirs = [
+  path.resolve('C:/Users/iswar/.gemini/antigravity-ide/brain/d5456363-271f-4c62-ae7e-8e3b273fba64'),
+  path.resolve('C:/Users/iswar/.gemini/antigravity-ide/brain/7580dbfc-e90a-4d5f-b73b-a16241bd2a27'),
+];
+
+function findSourceImage(filename: string): string | null {
+  for (const dir of brainDirs) {
+    const fullPath = path.join(dir, filename);
+    if (fs.existsSync(fullPath)) {
+      return fullPath;
+    }
+  }
+  return null;
+}
 
 async function main() {
   console.log('Seeding LuminaPhoto Database with Photorealistic Demo People Captures...');
@@ -33,7 +46,7 @@ async function main() {
     data: {
       email: 'admin@lumina.photos',
       passwordHash: adminPasswordHash,
-      name: 'Sarah Jenkins',
+      name: 'Elena Vance',
       role: 'ADMIN',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     },
@@ -43,7 +56,7 @@ async function main() {
     data: {
       email: 'photographer1@lumina.photos',
       passwordHash: teamPasswordHash,
-      name: 'Alex Rivera',
+      name: 'Marcus Ray',
       role: 'TEAM_MEMBER',
       avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     },
@@ -53,7 +66,7 @@ async function main() {
     data: {
       email: 'photographer2@lumina.photos',
       passwordHash: teamPasswordHash,
-      name: 'Maya Chen',
+      name: 'Sophia Chen',
       role: 'TEAM_MEMBER',
       avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
     },
@@ -97,7 +110,7 @@ async function main() {
     },
   });
 
-  // Assign Team Members
+  // Assign Team Members to Wedding Event
   await prisma.eventMember.createMany({
     data: [
       { eventId: weddingEvent.id, userId: member1.id, role: 'Lead Candid Photographer' },
@@ -200,18 +213,18 @@ async function main() {
 
   for (let i = 0; i < weddingPhotosList.length; i++) {
     const item = weddingPhotosList[i];
-    const sourcePath = path.join(brainDir, item.sourceFile);
+    const sourcePath = findSourceImage(item.sourceFile);
     const targetFilename = `${Date.now()}-${item.targetName}`;
     const destPath = path.join(event1Dir, targetFilename);
 
     let fileSize = 250000;
 
-    if (fs.existsSync(sourcePath)) {
+    if (sourcePath && fs.existsSync(sourcePath)) {
       fs.copyFileSync(sourcePath, destPath);
       const stats = fs.statSync(destPath);
       fileSize = stats.size;
     } else {
-      console.warn(`Source image ${sourcePath} not found!`);
+      console.warn(`Source image ${item.sourceFile} not found in brain directories!`);
     }
 
     const storageLocation = `events/${weddingEvent.id}/${targetFilename}`;
@@ -240,7 +253,7 @@ async function main() {
 
   console.log(`Created Event 1 with ${weddingPhotosList.length} photorealistic wedding pictures (9 curated, 1 draft).`);
 
-  // EVENT 2: "Tech Innovators Global Summit 2026" (Draft Event)
+  // EVENT 2: "Tech Innovators Global Summit 2026"
   const summitPinHash = await bcrypt.hash('654321', 10);
   const summitEvent = await prisma.event.create({
     data: {
@@ -249,26 +262,29 @@ async function main() {
       clientName: 'Nexus Global Tech',
       eventDate: new Date('2026-08-20T09:00:00Z'),
       location: 'Moscone Center, San Francisco',
-      description: 'Annual technology keynote sessions, startup pitch battles, and VIP networking dinner.',
+      description: 'Annual technology keynote sessions, startup pitch battles, developer workshops, and VIP networking awards gala.',
       createdByAdminId: admin.id,
       gallery: {
         create: {
           slug: 'tech-innovators-summit-2026',
           pinHash: summitPinHash,
-          isPublished: false,
-          customTitle: 'Tech Innovators Summit Highlights',
-          viewCount: 0,
+          isPublished: true,
+          publishedAt: new Date(),
+          allowDownload: true,
+          customTitle: 'Tech Innovators Global Summit 2026 Highlights',
+          customWelcomeMsg: 'Welcome attendees, keynote speakers, and founders! Explore the official photo captures from this year\'s summit.',
+          viewCount: 19,
         },
       },
     },
   });
 
-  await prisma.eventMember.create({
-    data: {
-      eventId: summitEvent.id,
-      userId: member1.id,
-      role: 'Keynote & Stage Photographer',
-    },
+  // Assign Team Members to Summit Event
+  await prisma.eventMember.createMany({
+    data: [
+      { eventId: summitEvent.id, userId: member1.id, role: 'Lead Stage Photographer' },
+      { eventId: summitEvent.id, userId: member2.id, role: 'Workshop & Hackathon Shooter' },
+    ],
   });
 
   const event2Dir = path.join(uploadsDir, 'events', summitEvent.id);
@@ -276,38 +292,73 @@ async function main() {
     fs.mkdirSync(event2Dir, { recursive: true });
   }
 
-  const summitSource = path.join(brainDir, 'tech_keynote_speaker_1789457261089.jpg');
-  const summitFilename = `${Date.now()}-keynote_speaker_stage.jpg`;
-  const summitDest = path.join(event2Dir, summitFilename);
-
-  let summitSize = 300000;
-  if (fs.existsSync(summitSource)) {
-    fs.copyFileSync(summitSource, summitDest);
-    summitSize = fs.statSync(summitDest).size;
-  }
-
-  const summitStorage = `events/${summitEvent.id}/${summitFilename}`;
-
-  await prisma.photo.create({
-    data: {
-      eventId: summitEvent.id,
-      uploadedByUserId: member1.id,
-      filename: summitFilename,
-      originalFilename: 'TechSummit_Keynote_Opening.jpg',
-      storageLocation: summitStorage,
-      fileSize: summitSize,
-      mimeType: 'image/jpeg',
+  const summitPhotosList = [
+    {
+      sourceFile: 'tech_keynote_speaker_1789457261089.jpg',
+      targetName: 'keynote_speaker_future_ai.jpg',
+      originalFilename: 'DSC_0102_Keynote_Future_Vision.jpg',
+      category: 'Keynote Session',
+      uploader: member1.id,
       isSelected: true,
-      tags: 'Keynote',
     },
-  });
+    {
+      sourceFile: 'tech_panel_discussion_1789465510238.jpg',
+      targetName: 'executive_panel_discussion.jpg',
+      originalFilename: 'DSC_0188_GlobalTech_Panel_Discussion.jpg',
+      category: 'Executive Panel',
+      uploader: member1.id,
+      isSelected: true,
+    },
+    {
+      sourceFile: 'tech_hackathon_team_1789465530489.jpg',
+      targetName: 'hackathon_devs_collaboration.jpg',
+      originalFilename: 'DSC_0245_Hackathon_Team_Innovation.jpg',
+      category: 'Workshop & Hackathon',
+      uploader: member2.id,
+      isSelected: true,
+    },
+  ];
+
+  let summitCoverUrl = '';
+
+  for (let i = 0; i < summitPhotosList.length; i++) {
+    const item = summitPhotosList[i];
+    const sourcePath = findSourceImage(item.sourceFile);
+    const targetFilename = `${Date.now()}-${item.targetName}`;
+    const destPath = path.join(event2Dir, targetFilename);
+
+    let fileSize = 350000;
+    if (sourcePath && fs.existsSync(sourcePath)) {
+      fs.copyFileSync(sourcePath, destPath);
+      fileSize = fs.statSync(destPath).size;
+    } else {
+      console.warn(`Source image ${item.sourceFile} not found!`);
+    }
+
+    const storageLocation = `events/${summitEvent.id}/${targetFilename}`;
+    if (i === 0) summitCoverUrl = `/uploads/${storageLocation}`;
+
+    await prisma.photo.create({
+      data: {
+        eventId: summitEvent.id,
+        uploadedByUserId: item.uploader,
+        filename: targetFilename,
+        originalFilename: item.originalFilename,
+        storageLocation,
+        fileSize,
+        mimeType: 'image/jpeg',
+        isSelected: item.isSelected,
+        tags: item.category,
+      },
+    });
+  }
 
   await prisma.event.update({
     where: { id: summitEvent.id },
-    data: { coverPhotoUrl: `/uploads/${summitStorage}` },
+    data: { coverPhotoUrl: summitCoverUrl },
   });
 
-  console.log('Created Event 2 (Tech Summit with keynote photograph).');
+  console.log(`Created Event 2 (Tech Summit with ${summitPhotosList.length} photorealistic photos).`);
 
   console.log('\n======================================================');
   console.log('✅ DATABASE SEEDING WITH REALISTIC PORTRAITS COMPLETED!');
@@ -317,9 +368,9 @@ async function main() {
   console.log('👉 TEAM MEMBER 1:  photographer1@lumina.photos / Team@123456');
   console.log('👉 TEAM MEMBER 2:  photographer2@lumina.photos / Team@123456');
   console.log('👉 TEAM MEMBER 3:  photographer3@lumina.photos / Team@123456');
-  console.log('\nDemo Customer Published Gallery:');
-  console.log('👉 URL:  http://localhost:5173/gallery/arjun-priya-wedding');
-  console.log('👉 PIN:  482917');
+  console.log('\nDemo Customer Published Galleries:');
+  console.log('👉 Event 1 (Wedding):      http://localhost:5173/gallery/arjun-priya-wedding (PIN: 482917)');
+  console.log('👉 Event 2 (Tech Summit):  http://localhost:5173/gallery/tech-innovators-summit-2026 (PIN: 654321)');
   console.log('======================================================\n');
 }
 
