@@ -51,13 +51,14 @@ export function setCustomBackendUrl(url: string): void {
 }
 
 export const PHOTO_FALLBACKS = [
-  'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop', // Royal Couple
-  'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop', // Ceremony
-  'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&auto=format&fit=crop', // Sangeet / Celebration
-  'https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=1200&auto=format&fit=crop', // Rings & Details
-  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop', // Tech Keynote
-  'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop', // Panel Discussion
-  'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1200&auto=format&fit=crop', // Hackathon
+  'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop', // Wedding Couple & Petal Shower
+  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1200&auto=format&fit=crop', // Wedding Dining Reception Floral Table
+  'https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=1200&auto=format&fit=crop', // Gold Wedding Rings on Lace
+  'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop', // Royal Couple Portrait
+  'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&auto=format&fit=crop', // Sangeet Dance Celebration
+  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop', // Tech Keynote Mainstage
+  'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop', // Tech Panel Discussion
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1200&auto=format&fit=crop', // Tech Hackathon Arena
   'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=1200&auto=format&fit=crop', // Robotics Expo
 ];
 
@@ -65,25 +66,28 @@ export const getFallbackPhotoUrl = (identifier?: string): string => {
   if (!identifier) return PHOTO_FALLBACKS[0];
   const lower = identifier.toLowerCase();
   if (lower.includes('tech') || lower.includes('keynote') || lower.includes('summit') || lower.includes('future')) {
-    return PHOTO_FALLBACKS[4];
-  }
-  if (lower.includes('panel') || lower.includes('discuss') || lower.includes('lead')) {
     return PHOTO_FALLBACKS[5];
   }
-  if (lower.includes('hackathon') || lower.includes('dev') || lower.includes('code')) {
+  if (lower.includes('panel') || lower.includes('discuss') || lower.includes('lead')) {
     return PHOTO_FALLBACKS[6];
   }
-  if (lower.includes('robot') || lower.includes('ai') || lower.includes('expo')) {
+  if (lower.includes('hackathon') || lower.includes('dev') || lower.includes('code')) {
     return PHOTO_FALLBACKS[7];
   }
-  if (lower.includes('ring') || lower.includes('detail') || lower.includes('jewel')) {
-    return PHOTO_FALLBACKS[3];
+  if (lower.includes('robot') || lower.includes('ai') || lower.includes('expo')) {
+    return PHOTO_FALLBACKS[8];
   }
-  if (lower.includes('dance') || lower.includes('sangeet') || lower.includes('party') || lower.includes('haldi')) {
+  if (lower.includes('ring') || lower.includes('detail') || lower.includes('jewel') || lower.includes('gold')) {
     return PHOTO_FALLBACKS[2];
   }
-  if (lower.includes('varmala') || lower.includes('ceremony') || lower.includes('mandap') || lower.includes('bridal') || lower.includes('groom')) {
+  if (lower.includes('dinner') || lower.includes('table') || lower.includes('decor') || lower.includes('flower') || lower.includes('reception')) {
     return PHOTO_FALLBACKS[1];
+  }
+  if (lower.includes('petal') || lower.includes('varmala') || lower.includes('ceremony') || lower.includes('mandap') || lower.includes('shower')) {
+    return PHOTO_FALLBACKS[0];
+  }
+  if (lower.includes('dance') || lower.includes('sangeet') || lower.includes('party')) {
+    return PHOTO_FALLBACKS[4];
   }
   let hash = 0;
   for (let i = 0; i < identifier.length; i++) {
@@ -148,8 +152,8 @@ export function createCustomerGalleryClient(guestToken?: string) {
 // ----------------------------------------------------
 // Persistent Client Mock Store for Guaranteed Demo Offline Preview
 // ----------------------------------------------------
-const MOCK_EVENTS_KEY = 'lumina_mock_events_v2';
-const MOCK_PHOTOS_KEY = 'lumina_mock_photos_v2';
+const MOCK_EVENTS_KEY = 'lumina_mock_events_v5';
+const MOCK_PHOTOS_KEY = 'lumina_mock_photos_v5';
 
 function getMockEvents(): EventItem[] {
   try {
