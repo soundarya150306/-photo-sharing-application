@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
-import { api, getAssetUrl, API_BASE } from '../services/api';
+import { api, getAssetUrl, getFallbackPhotoUrl, API_BASE } from '../services/api';
 import { PublicGalleryInfo, PublicPhoto } from '../types';
 import { CustomerLightbox } from '../components/CustomerLightbox';
 import {
@@ -459,9 +459,13 @@ export const CustomerGalleryPage: React.FC = () => {
                 className="group relative rounded-2xl overflow-hidden glass-card cursor-pointer border border-white/5 hover:border-brand-400/40 transition-all duration-300 aspect-[4/3] bg-dark-900 shadow-lg hover:shadow-2xl"
               >
                 <img
-                  src={getAssetUrl(photo.url)}
+                  src={getAssetUrl(photo.url, photo.originalFilename)}
                   alt={photo.originalFilename}
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = getFallbackPhotoUrl(photo.originalFilename || photo.id);
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
 

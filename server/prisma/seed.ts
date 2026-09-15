@@ -228,7 +228,7 @@ async function main() {
     }
 
     const storageLocation = `events/${weddingEvent.id}/${targetFilename}`;
-    if (i === 0) firstCoverUrl = `/uploads/${storageLocation}`;
+    if (i === 0) firstCoverUrl = 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop';
 
     await prisma.photo.create({
       data: {
@@ -336,7 +336,7 @@ async function main() {
     }
 
     const storageLocation = `events/${summitEvent.id}/${targetFilename}`;
-    if (i === 0) summitCoverUrl = `/uploads/${storageLocation}`;
+    if (i === 0) summitCoverUrl = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop';
 
     await prisma.photo.create({
       data: {

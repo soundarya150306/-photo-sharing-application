@@ -50,8 +50,50 @@ export function setCustomBackendUrl(url: string): void {
   apiClient.defaults.baseURL = API_BASE;
 }
 
-export const getAssetUrl = (urlOrPath?: string): string => {
-  if (!urlOrPath) return '';
+export const PHOTO_FALLBACKS = [
+  'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop', // Royal Couple
+  'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop', // Ceremony
+  'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200&auto=format&fit=crop', // Sangeet / Celebration
+  'https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=1200&auto=format&fit=crop', // Rings & Details
+  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop', // Tech Keynote
+  'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop', // Panel Discussion
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1200&auto=format&fit=crop', // Hackathon
+  'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=1200&auto=format&fit=crop', // Robotics Expo
+];
+
+export const getFallbackPhotoUrl = (identifier?: string): string => {
+  if (!identifier) return PHOTO_FALLBACKS[0];
+  const lower = identifier.toLowerCase();
+  if (lower.includes('tech') || lower.includes('keynote') || lower.includes('summit') || lower.includes('future')) {
+    return PHOTO_FALLBACKS[4];
+  }
+  if (lower.includes('panel') || lower.includes('discuss') || lower.includes('lead')) {
+    return PHOTO_FALLBACKS[5];
+  }
+  if (lower.includes('hackathon') || lower.includes('dev') || lower.includes('code')) {
+    return PHOTO_FALLBACKS[6];
+  }
+  if (lower.includes('robot') || lower.includes('ai') || lower.includes('expo')) {
+    return PHOTO_FALLBACKS[7];
+  }
+  if (lower.includes('ring') || lower.includes('detail') || lower.includes('jewel')) {
+    return PHOTO_FALLBACKS[3];
+  }
+  if (lower.includes('dance') || lower.includes('sangeet') || lower.includes('party') || lower.includes('haldi')) {
+    return PHOTO_FALLBACKS[2];
+  }
+  if (lower.includes('varmala') || lower.includes('ceremony') || lower.includes('mandap') || lower.includes('bridal') || lower.includes('groom')) {
+    return PHOTO_FALLBACKS[1];
+  }
+  let hash = 0;
+  for (let i = 0; i < identifier.length; i++) {
+    hash = (hash + identifier.charCodeAt(i)) % PHOTO_FALLBACKS.length;
+  }
+  return PHOTO_FALLBACKS[hash];
+};
+
+export const getAssetUrl = (urlOrPath?: string, fallbackHint?: string): string => {
+  if (!urlOrPath) return getFallbackPhotoUrl(fallbackHint);
   if (
     urlOrPath.startsWith('http://') ||
     urlOrPath.startsWith('https://') ||
@@ -62,6 +104,9 @@ export const getAssetUrl = (urlOrPath?: string): string => {
   }
   const cleanPath = urlOrPath.startsWith('/') ? urlOrPath : `/${urlOrPath}`;
   const base = BACKEND_URL || resolveBackendBase();
+  if (!base && !cleanPath.startsWith('http')) {
+    return getFallbackPhotoUrl(urlOrPath || fallbackHint);
+  }
   return base ? `${base}${cleanPath}` : cleanPath;
 };
 

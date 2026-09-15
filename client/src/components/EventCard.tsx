@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Image as ImageIcon, CheckCircle, Lock, Globe, Users, ArrowRight, Shield } from 'lucide-react';
 import { EventItem } from '../types';
-import { getAssetUrl } from '../services/api';
+import { getAssetUrl, getFallbackPhotoUrl } from '../services/api';
 
 interface EventCardProps {
   event: EventItem;
@@ -33,18 +33,15 @@ export const EventCard: React.FC<EventCardProps> = ({
     <div className="glass-card rounded-2xl overflow-hidden flex flex-col group border border-white/5 hover:border-brand-500/30 transition-all duration-300">
       {/* Cover Image Header */}
       <div className="relative h-48 w-full overflow-hidden bg-dark-900">
-        {event.coverPhotoUrl ? (
-          <img
-            src={getAssetUrl(event.coverPhotoUrl)}
-            alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-dark-900 to-dark-850 text-slate-500">
-            <ImageIcon className="w-10 h-10 mb-1 opacity-40 text-brand-400" />
-            <span className="text-xs">No photos uploaded yet</span>
-          </div>
-        )}
+        <img
+          src={getAssetUrl(event.coverPhotoUrl, event.title)}
+          alt={event.title}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = getFallbackPhotoUrl(event.title || event.clientName);
+          }}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
 
         {/* Status Badge */}
         <div className="absolute top-3 right-3">

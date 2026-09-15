@@ -1,7 +1,7 @@
 import React from 'react';
 import { Check, Trash2, Eye, User, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { Photo, Role } from '../types';
-import { getAssetUrl } from '../services/api';
+import { getAssetUrl, getFallbackPhotoUrl } from '../services/api';
 
 interface PhotoGridProps {
   photos: Photo[];
@@ -69,6 +69,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
                 src={photoUrl}
                 alt={photo.originalFilename}
                 loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = getFallbackPhotoUrl(photo.originalFilename || photo.tags || photo.id);
+                }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
 
