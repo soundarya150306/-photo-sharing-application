@@ -30,14 +30,28 @@ app.use('/uploads', express.static(config.uploadDir, {
   },
 }));
 
+// Root status endpoint
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: '🚀 LuminaPhoto API Server is online and active.',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      api: '/api',
+      uploads: '/uploads',
+    },
+  });
+});
+
 // API Routes
 app.use('/api', apiRouter);
 
-// 404 handler for API routes
-app.use('/api/*', (req, res) => {
+// Catch-all 404 handler
+app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
+    message: `Route not found: ${req.method} ${req.originalUrl}. LuminaPhoto API is online.`,
   });
 });
 

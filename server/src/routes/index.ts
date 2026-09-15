@@ -7,7 +7,21 @@ import publicRoutes from './public.routes';
 
 const router = Router();
 
-// Health check
+// Root API index & health check
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    service: 'LuminaPhoto API',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      events: '/api/events',
+      public: '/api/public',
+      health: '/api/health',
+    },
+  });
+});
+
 router.get('/health', (req, res) => {
   res.json({
     status: 'ok',
