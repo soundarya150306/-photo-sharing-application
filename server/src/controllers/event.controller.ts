@@ -203,7 +203,7 @@ export async function getEvents(req: Request, res: Response, next: NextFunction)
 
 export async function getEventById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.id;
+    const eventId = String(req.params.id);
     const user = req.user!;
 
     const event = await prisma.event.findUnique({
@@ -260,15 +260,17 @@ export async function getEventById(req: Request, res: Response, next: NextFuncti
       },
     });
 
+    const eventObj = event as any;
+
     res.json({
       success: true,
       data: {
         event: {
           ...event,
           stats: {
-            totalPhotos: event._count.photos,
+            totalPhotos: eventObj._count?.photos || 0,
             selectedPhotos: selectedCount,
-            memberCount: event._count.members,
+            memberCount: eventObj._count?.members || 0,
             myUploadedPhotos: myUploadedCount,
           },
         },
@@ -281,7 +283,7 @@ export async function getEventById(req: Request, res: Response, next: NextFuncti
 
 export async function updateEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.id;
+    const eventId = String(req.params.id);
     const data = updateEventSchema.parse(req.body);
 
     const updatedEvent = await prisma.event.update({
@@ -308,7 +310,7 @@ export async function updateEvent(req: Request, res: Response, next: NextFunctio
 
 export async function deleteEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.id;
+    const eventId = String(req.params.id);
 
     await prisma.event.delete({
       where: { id: eventId },
@@ -325,7 +327,7 @@ export async function deleteEvent(req: Request, res: Response, next: NextFunctio
 
 export async function addMemberToEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.id;
+    const eventId = String(req.params.id);
     const { userId, role } = req.body;
 
     if (!userId) {
@@ -337,7 +339,7 @@ export async function addMemberToEvent(req: Request, res: Response, next: NextFu
       where: {
         eventId_userId: {
           eventId,
-          userId,
+          userId: String(userId),
         },
       },
       update: {
@@ -345,7 +347,7 @@ export async function addMemberToEvent(req: Request, res: Response, next: NextFu
       },
       create: {
         eventId,
-        userId,
+        userId: String(userId),
         role: role || 'Photographer',
       },
       include: {
@@ -367,7 +369,8 @@ export async function addMemberToEvent(req: Request, res: Response, next: NextFu
 
 export async function removeMemberFromEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { id: eventId, userId } = req.params;
+    const eventId = String(req.params.id);
+    const userId = String(req.params.userId);
 
     await prisma.eventMember.deleteMany({
       where: {

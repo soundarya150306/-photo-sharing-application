@@ -15,7 +15,7 @@ export interface GalleryGuestPayload {
 }
 
 export function signUserToken(payload: UserTokenPayload, expiresIn: string = '7d'): string {
-  return jwt.sign(payload, config.jwtSecret, { expiresIn });
+  return jwt.sign(payload, config.jwtSecret, { expiresIn: expiresIn as any });
 }
 
 export function verifyUserToken(token: string): UserTokenPayload {
@@ -28,7 +28,7 @@ export function signGalleryGuestToken(gallerySlug: string, eventId: string, expi
     eventId,
     isGuest: true,
   };
-  return jwt.sign(payload, config.jwtSecret, { expiresIn });
+  return jwt.sign(payload, config.jwtSecret, { expiresIn: expiresIn as any });
 }
 
 export function verifyGalleryGuestToken(token: string): GalleryGuestPayload {

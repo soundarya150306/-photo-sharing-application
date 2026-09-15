@@ -17,7 +17,7 @@ const unlockSchema = z.object({
  */
 export async function getPublicGalleryInfo(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { slug } = req.params;
+    const slug = String(req.params.slug);
 
     const gallery = await prisma.gallery.findUnique({
       where: { slug },
@@ -50,18 +50,20 @@ export async function getPublicGalleryInfo(req: Request, res: Response, next: Ne
       },
     });
 
+    const gal = gallery as any;
+
     res.json({
       success: true,
       data: {
         gallery: {
           slug: gallery.slug,
-          customTitle: gallery.customTitle || gallery.event.title,
+          customTitle: gallery.customTitle || gal.event?.title,
           customWelcomeMsg: gallery.customWelcomeMsg,
           allowDownload: gallery.allowDownload,
-          eventDate: gallery.event.eventDate,
-          location: gallery.event.location,
-          clientName: gallery.event.clientName,
-          coverPhotoUrl: gallery.event.coverPhotoUrl,
+          eventDate: gal.event?.eventDate,
+          location: gal.event?.location,
+          clientName: gal.event?.clientName,
+          coverPhotoUrl: gal.event?.coverPhotoUrl,
           totalSelectedPhotos: curatedCount,
           requiresPin: true,
         },
@@ -77,7 +79,7 @@ export async function getPublicGalleryInfo(req: Request, res: Response, next: Ne
  */
 export async function unlockGallery(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { slug } = req.params;
+    const slug = String(req.params.slug);
     const data = unlockSchema.parse(req.body);
 
     const gallery = await prisma.gallery.findUnique({
@@ -121,6 +123,7 @@ export async function unlockGallery(req: Request, res: Response, next: NextFunct
 
     // Issue Guest Session Token
     const guestToken = signGalleryGuestToken(gallery.slug, gallery.eventId, '24h');
+    const gal = gallery as any;
 
     res.json({
       success: true,
@@ -129,11 +132,11 @@ export async function unlockGallery(req: Request, res: Response, next: NextFunct
         token: guestToken,
         gallery: {
           slug: gallery.slug,
-          title: gallery.customTitle || gallery.event.title,
+          title: gallery.customTitle || gal.event?.title,
           welcomeMessage: gallery.customWelcomeMsg,
-          eventDate: gallery.event.eventDate,
+          eventDate: gal.event?.eventDate,
           allowDownload: gallery.allowDownload,
-          coverPhotoUrl: gallery.event.coverPhotoUrl,
+          coverPhotoUrl: gal.event?.coverPhotoUrl,
         },
       },
     });
@@ -162,7 +165,7 @@ function extractGuestToken(req: Request, slug: string): string | null {
  */
 export async function getPublicGalleryPhotos(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { slug } = req.params;
+    const slug = String(req.params.slug);
     const token = extractGuestToken(req, slug);
 
     if (!token) {
@@ -226,17 +229,19 @@ export async function getPublicGalleryPhotos(req: Request, res: Response, next: 
       createdAt: photo.createdAt,
     }));
 
+    const gal = gallery as any;
+
     res.json({
       success: true,
       data: {
         gallery: {
           slug: gallery.slug,
-          title: gallery.customTitle || gallery.event.title,
+          title: gallery.customTitle || gal.event?.title,
           customWelcomeMsg: gallery.customWelcomeMsg,
           allowDownload: gallery.allowDownload,
-          eventDate: gallery.event.eventDate,
-          location: gallery.event.location,
-          clientName: gallery.event.clientName,
+          eventDate: gal.event?.eventDate,
+          location: gal.event?.location,
+          clientName: gal.event?.clientName,
         },
         photos: formattedPhotos,
         count: formattedPhotos.length,
@@ -252,7 +257,8 @@ export async function getPublicGalleryPhotos(req: Request, res: Response, next: 
  */
 export async function downloadSinglePhoto(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { slug, photoId } = req.params;
+    const slug = String(req.params.slug);
+    const photoId = String(req.params.photoId);
     const token = extractGuestToken(req, slug);
 
     if (!token) {
@@ -305,7 +311,7 @@ export async function downloadSinglePhoto(req: Request, res: Response, next: Nex
  */
 export async function downloadAllPhotosZip(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { slug } = req.params;
+    const slug = String(req.params.slug);
     const token = extractGuestToken(req, slug);
 
     if (!token) {

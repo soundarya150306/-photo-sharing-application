@@ -15,7 +15,7 @@ const publishGallerySchema = z.object({
 
 export async function getGalleryConfig(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.eventId || req.params.id;
+    const eventId = String(req.params.eventId || req.params.id);
 
     let gallery = await prisma.gallery.findUnique({
       where: { eventId },
@@ -59,6 +59,8 @@ export async function getGalleryConfig(req: Request, res: Response, next: NextFu
       where: { eventId },
     });
 
+    const galObj = gallery as any;
+
     res.json({
       success: true,
       data: {
@@ -70,7 +72,7 @@ export async function getGalleryConfig(req: Request, res: Response, next: NextFu
           publishedAt: gallery.publishedAt,
           expiresAt: gallery.expiresAt,
           allowDownload: gallery.allowDownload,
-          customTitle: gallery.customTitle || gallery.event.title,
+          customTitle: gallery.customTitle || galObj.event?.title || 'Event Gallery',
           customWelcomeMsg: gallery.customWelcomeMsg,
           viewCount: gallery.viewCount,
           shareableUrl: `${config.clientUrl}/gallery/${gallery.slug}`,
@@ -88,7 +90,7 @@ export async function getGalleryConfig(req: Request, res: Response, next: NextFu
 
 export async function updateAndPublishGallery(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.eventId || req.params.id;
+    const eventId = String(req.params.eventId || req.params.id);
     const data = publishGallerySchema.parse(req.body);
 
     // Verify event exists

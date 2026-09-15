@@ -12,7 +12,7 @@ const batchSelectionSchema = z.object({
 
 export async function uploadPhotos(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.eventId || req.params.id;
+    const eventId = String(req.params.eventId || req.params.id);
     const user = req.user!;
     const files = req.files as Express.Multer.File[];
 
@@ -94,7 +94,7 @@ export async function uploadPhotos(req: Request, res: Response, next: NextFuncti
 
 export async function getEventPhotos(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.eventId || req.params.id;
+    const eventId = String(req.params.eventId || req.params.id);
     const user = req.user!;
     const { filter, memberId } = req.query;
 
@@ -140,7 +140,7 @@ export async function getEventPhotos(req: Request, res: Response, next: NextFunc
 
 export async function updatePhotoSelection(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const eventId = req.params.eventId || req.params.id;
+    const eventId = String(req.params.eventId || req.params.id);
     const data = batchSelectionSchema.parse(req.body);
 
     const updateResult = await prisma.photo.updateMany({
@@ -172,7 +172,8 @@ export async function updatePhotoSelection(req: Request, res: Response, next: Ne
 
 export async function deletePhoto(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { eventId, photoId } = req.params;
+    const eventId = String(req.params.eventId);
+    const photoId = String(req.params.photoId);
     const user = req.user!;
 
     const photo = await prisma.photo.findUnique({
