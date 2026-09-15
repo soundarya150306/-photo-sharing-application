@@ -9,6 +9,8 @@ client/dist/
 server/dist/
 dist/
 build/
+.vite/
+client/.vite/
 
 # Environment Variables & Secrets
 .env
